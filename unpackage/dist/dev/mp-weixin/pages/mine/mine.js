@@ -3,9 +3,9 @@ const common_vendor = require("../../common/vendor.js");
 const _sfc_main = {
   data() {
     return {
-      avatarUrl: "/static/avatar.png",
-      // 默认头像
-      nickName: "未登录",
+      avatarUrl: "",
+      nickName: "",
+      userId: "",
       menuItems: [
         { name: "我的表白", icon: "cuIcon-favor" },
         { name: "我的评论", icon: "cuIcon-comment" },
@@ -15,37 +15,22 @@ const _sfc_main = {
     };
   },
   onShow() {
-    this.getUserInfo();
-  },
-  methods: {
-    getUserInfo() {
-      const avatarUrl = common_vendor.index.getStorageSync("avatarUrl");
-      const nickName = common_vendor.index.getStorageSync("nickName");
-      if (avatarUrl) {
-        this.avatarUrl = avatarUrl;
-      }
-      if (nickName) {
-        this.nickName = nickName;
-      }
-    },
-    handleMenu(item) {
-      common_vendor.index.showToast({
-        title: `点击了${item.name}`,
-        icon: "none"
-      });
-    }
+    this.avatarUrl = common_vendor.index.getStorageSync("avatarUrl");
+    this.nickName = common_vendor.index.getStorageSync("nickName");
+    this.userId = common_vendor.index.getStorageSync("userId");
   }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
-    a: $data.avatarUrl,
-    b: common_vendor.t($data.nickName),
-    c: common_vendor.f($data.menuItems, (item, index, i0) => {
+    a: $data.avatarUrl || "/static/logo.png",
+    b: common_vendor.t($data.nickName || "未登录"),
+    c: common_vendor.t($data.userId || "--"),
+    d: common_vendor.f($data.menuItems, (item, index, i0) => {
       return {
         a: common_vendor.n(item.icon),
         b: common_vendor.t(item.name),
         c: index,
-        d: common_vendor.o(($event) => $options.handleMenu(item), index)
+        d: common_vendor.o(($event) => _ctx.handleMenu(item), index)
       };
     })
   };

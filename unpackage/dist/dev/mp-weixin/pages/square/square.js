@@ -233,12 +233,22 @@ const _sfc_main = {
         icon: "none"
       });
     },
-    goToPost() {
-      common_vendor.index.navigateTo({
-        url: "/pages/post/post"
+    showActionSheet() {
+      common_vendor.index.showActionSheet({
+        itemList: ["发布文字", "发布图片"],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            common_vendor.index.navigateTo({
+              url: "/pages/post/post?type=text"
+            });
+          } else if (res.tapIndex === 1) {
+            common_vendor.index.navigateTo({
+              url: "/pages/post/post?type=image"
+            });
+          }
+        }
       });
     },
-    // 查看全部评论
     viewAllComments(postIndex) {
       common_vendor.index.navigateTo({
         url: `/pages/comments/comments?postId=${postIndex}`
@@ -313,7 +323,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     c: common_vendor.o((...args) => $options.onRefresh && $options.onRefresh(...args)),
     d: $data.isRefreshing,
-    e: common_vendor.o((...args) => $options.goToPost && $options.goToPost(...args))
+    e: common_vendor.o((...args) => $options.showActionSheet && $options.showActionSheet(...args))
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

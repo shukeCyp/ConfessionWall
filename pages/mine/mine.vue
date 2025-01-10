@@ -2,10 +2,10 @@
 	<view class="mine-container">
 		<!-- 用户信息 -->
 		<view class="user-info">
-			<image class="avatar" :src="avatarUrl" mode="aspectFill"></image>
+			<image class="avatar" :src="avatarUrl || '/static/logo.png'" mode="aspectFill"></image>
 			<view class="info">
-				<text class="nickname">{{nickName}}</text>
-				<text class="id">ID: 10086</text>
+				<text class="nickname">{{nickName || '未登录'}}</text>
+				<text class="id">ID: {{userId || '--'}}</text>
 			</view>
 			<button class="edit-btn">编辑资料</button>
 		</view>
@@ -43,8 +43,9 @@
 export default {
 	data() {
 		return {
-			avatarUrl: '/static/avatar.png', // 默认头像
-			nickName: '未登录',
+			avatarUrl: '',
+			nickName: '',
+			userId: '',
 			menuItems: [
 				{ name: '我的表白', icon: 'cuIcon-favor' },
 				{ name: '我的评论', icon: 'cuIcon-comment' },
@@ -54,27 +55,10 @@ export default {
 		}
 	},
 	onShow() {
-		// 每次显示页面时获取最新的用户信息
-		this.getUserInfo()
-	},
-	methods: {
-		getUserInfo() {
-			const avatarUrl = uni.getStorageSync('avatarUrl')
-			const nickName = uni.getStorageSync('nickName')
-			
-			if (avatarUrl) {
-				this.avatarUrl = avatarUrl
-			}
-			if (nickName) {
-				this.nickName = nickName
-			}
-		},
-		handleMenu(item) {
-			uni.showToast({
-				title: `点击了${item.name}`,
-				icon: 'none'
-			})
-		}
+		// 从本地存储获取用户信息
+		this.avatarUrl = uni.getStorageSync('avatarUrl')
+		this.nickName = uni.getStorageSync('nickName')
+		this.userId = uni.getStorageSync('userId')
 	}
 }
 </script>

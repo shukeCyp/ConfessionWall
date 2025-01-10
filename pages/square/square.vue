@@ -88,9 +88,9 @@
 			</view>
 		</scroll-view>
 		
-		<!-- 发布按钮 -->
-		<view class="post-fab" @tap="goToPost">
-			<text class="cuIcon-add"></text>
+		<!-- 悬浮按钮 -->
+		<view class="float-btn" @tap="showActionSheet">
+			<text class="plus-icon">+</text>
 		</view>
 	</view>
 </template>
@@ -330,12 +330,22 @@ export default {
 				icon: 'none'
 			})
 		},
-		goToPost() {
-			uni.navigateTo({
-				url: '/pages/post/post'
+		showActionSheet() {
+			uni.showActionSheet({
+				itemList: ['发布文字', '发布图片'],
+				success: (res) => {
+					if(res.tapIndex === 0) {
+						uni.navigateTo({
+							url: '/pages/post/post?type=text'
+						})
+					} else if(res.tapIndex === 1) {
+						uni.navigateTo({
+							url: '/pages/post/post?type=image'
+						})
+					}
+				}
 			})
 		},
-		// 查看全部评论
 		viewAllComments(postIndex) {
 			uni.navigateTo({
 				url: `/pages/comments/comments?postId=${postIndex}`
@@ -495,24 +505,33 @@ export default {
 	}
 }
 
-.post-fab {
+.float-btn {
 	position: fixed;
-	right: 30rpx;
+	right: 40rpx;
 	bottom: 140rpx;
 	width: 100rpx;
 	height: 100rpx;
-	background: #07c160;
+	background: #fff;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 4rpx 20rpx rgba(7,193,96,0.3);
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 	z-index: 99;
 	
-	text {
+	.plus-icon {
 		font-size: 60rpx;
-		color: #fff;
-		font-weight: bold;
+		color: #333;
+		height: 60rpx;
+		line-height: 54rpx;
+		width: 60rpx;
+		text-align: center;
+		margin: 0;
+		padding: 0;
+	}
+	
+	&:active {
+		transform: scale(0.95);
 	}
 }
 </style> 

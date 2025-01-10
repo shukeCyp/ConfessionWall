@@ -147,22 +147,30 @@
 .post-list .post-item .content-box .interaction-box .comment-list .view-more:active {
   opacity: 0.7;
 }
-.post-fab {
+.float-btn {
   position: fixed;
-  right: 30rpx;
+  right: 40rpx;
   bottom: 140rpx;
   width: 100rpx;
   height: 100rpx;
-  background: #07c160;
+  background: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 20rpx rgba(7, 193, 96, 0.3);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
   z-index: 99;
 }
-.post-fab text {
+.float-btn .plus-icon {
   font-size: 60rpx;
-  color: #fff;
-  font-weight: bold;
+  color: #333;
+  height: 60rpx;
+  line-height: 54rpx;
+  width: 60rpx;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+.float-btn:active {
+  transform: scale(0.95);
 }

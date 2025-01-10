@@ -1,0 +1,9 @@
+/* ColorUI 主要样式 */
+/* 图标相关 */
+[class*="cuIcon-"] {
+	font-family: "weui";
+	font-size: 36rpx;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+} 

@@ -1,0 +1,79 @@
+
+	/* 每个页面公共css */
+	/* ColorUI 主要样式 */
+	/* 图标相关 */
+[class*="cuIcon-"] {
+	font-family: "weui";
+	font-size: 36rpx;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+	/* ColorUI 图标库 */
+.cuIcon-appreciate:before {
+	content: "\e644";
+}
+.cuIcon-check:before {
+	content: "\e645";
+}
+.cuIcon-close:before {
+	content: "\e646";
+}
+.cuIcon-edit:before {
+	content: "\e649";
+}
+.cuIcon-emoji:before {
+	content: "\e64a";
+}
+.cuIcon-favor:before {
+	content: "\e64c";
+}
+.cuIcon-loading:before {
+	content: "\e64f";
+}
+.cuIcon-location:before {
+	content: "\e651";
+}
+.cuIcon-phone:before {
+	content: "\e652";
+}
+.cuIcon-right:before {
+	content: "\e6a3";
+}
+.cuIcon-search:before {
+	content: "\e65c";
+}
+.cuIcon-settings:before {
+	content: "\e65e";
+}
+.cuIcon-share:before {
+	content: "\e65f";
+}
+.cuIcon-unfold:before {
+	content: "\e661";
+}
+.cuIcon-warn:before {
+	content: "\e663";
+}
+.cuIcon-camera:before {
+	content: "\e665";
+}
+.cuIcon-comment:before {
+	content: "\e667";
+}
+.cuIcon-like:before {
+	content: "\e669";
+}
+.cuIcon-notification:before {
+	content: "\e66b";
+}
+.cuIcon-write:before {
+	content: "\e670";
+}
+.cuIcon-add:before {
+	content: "+";
+}
+page {
+		background-color: #f5f5f5;
+}
+page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

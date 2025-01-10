@@ -1,0 +1,84 @@
+/* ColorUI 图标库 */
+.cuIcon-appreciate:before {
+	content: "\e644";
+}
+
+.cuIcon-check:before {
+	content: "\e645";
+}
+
+.cuIcon-close:before {
+	content: "\e646";
+}
+
+.cuIcon-edit:before {
+	content: "\e649";
+}
+
+.cuIcon-emoji:before {
+	content: "\e64a";
+}
+
+.cuIcon-favor:before {
+	content: "\e64c";
+}
+
+.cuIcon-loading:before {
+	content: "\e64f";
+}
+
+.cuIcon-location:before {
+	content: "\e651";
+}
+
+.cuIcon-phone:before {
+	content: "\e652";
+}
+
+.cuIcon-right:before {
+	content: "\e6a3";
+}
+
+.cuIcon-search:before {
+	content: "\e65c";
+}
+
+.cuIcon-settings:before {
+	content: "\e65e";
+}
+
+.cuIcon-share:before {
+	content: "\e65f";
+}
+
+.cuIcon-unfold:before {
+	content: "\e661";
+}
+
+.cuIcon-warn:before {
+	content: "\e663";
+}
+
+.cuIcon-camera:before {
+	content: "\e665";
+}
+
+.cuIcon-comment:before {
+	content: "\e667";
+}
+
+.cuIcon-like:before {
+	content: "\e669";
+}
+
+.cuIcon-notification:before {
+	content: "\e66b";
+}
+
+.cuIcon-write:before {
+	content: "\e670";
+}
+
+.cuIcon-add:before {
+	content: "+";
+} 

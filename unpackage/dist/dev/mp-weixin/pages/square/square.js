@@ -223,17 +223,42 @@ const _sfc_main = {
         current
       });
     },
+    // 检查登录状态
+    checkLogin() {
+      const userId = common_vendor.index.getStorageSync("userId");
+      if (!userId) {
+        common_vendor.index.showModal({
+          title: "提示",
+          content: "请先登录",
+          success: (res) => {
+            if (res.confirm) {
+              common_vendor.index.navigateTo({
+                url: "/pages/login/login"
+              });
+            }
+          }
+        });
+        return false;
+      }
+      return true;
+    },
     handleLike(index) {
+      if (!this.checkLogin())
+        return;
       this.posts[index].isLiked = !this.posts[index].isLiked;
       this.posts[index].likes += this.posts[index].isLiked ? 1 : -1;
     },
     handleComment(index) {
+      if (!this.checkLogin())
+        return;
       common_vendor.index.showToast({
         title: "评论功能开发中",
         icon: "none"
       });
     },
     showActionSheet() {
+      if (!this.checkLogin())
+        return;
       common_vendor.index.showActionSheet({
         itemList: ["发布文字", "发布图片"],
         success: (res) => {
@@ -249,13 +274,39 @@ const _sfc_main = {
         }
       });
     },
+    hidePopup() {
+      this.$refs.popup && this.$refs.popup.close();
+    },
+    handleAction(type) {
+      this.hidePopup();
+      if (type === "text") {
+        common_vendor.index.navigateTo({
+          url: "/pages/post/post?type=text"
+        });
+      } else if (type === "image") {
+        common_vendor.index.navigateTo({
+          url: "/pages/post/post?type=image"
+        });
+      }
+    },
+    // 查看全部评论
     viewAllComments(postIndex) {
+      if (!this.checkLogin())
+        return;
       common_vendor.index.navigateTo({
         url: `/pages/comments/comments?postId=${postIndex}`
       });
+    },
+    // 监听弹窗状态变化
+    popupChange(e) {
+      console.log("popup status:", e.show);
     }
   }
 };
+if (!Array) {
+  const _component_uni_popup = common_vendor.resolveComponent("uni-popup");
+  _component_uni_popup();
+}
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_vendor.f($data.bannerList, (item, index, i0) => {
@@ -323,7 +374,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     c: common_vendor.o((...args) => $options.onRefresh && $options.onRefresh(...args)),
     d: $data.isRefreshing,
-    e: common_vendor.o((...args) => $options.showActionSheet && $options.showActionSheet(...args))
+    e: common_vendor.o((...args) => $options.showActionSheet && $options.showActionSheet(...args)),
+    f: common_vendor.o(($event) => $options.handleAction("text")),
+    g: common_vendor.o(($event) => $options.handleAction("image")),
+    h: common_vendor.o((...args) => $options.hidePopup && $options.hidePopup(...args)),
+    i: common_vendor.sr("popup", "67c1daae-0"),
+    j: common_vendor.o($options.popupChange),
+    k: common_vendor.p({
+      type: "bottom",
+      ["mask-click"]: true
+    })
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

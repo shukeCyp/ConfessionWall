@@ -5,23 +5,24 @@
 			<image class="avatar" :src="avatarUrl || '/static/logo.png'" mode="aspectFill"></image>
 			<view class="info">
 				<text class="nickname">{{nickName || '未登录'}}</text>
-				<text class="id">ID: {{userId || '--'}}</text>
+				<text class="id" v-if="userId">ID: {{userId}}</text>
 			</view>
-			<button class="edit-btn">编辑资料</button>
+			<!-- 未登录显示登录按钮，已登录不显示编辑按钮 -->
+			<button v-if="!userId" class="login-btn" @tap="goToLogin">点击登录</button>
 		</view>
 		
 		<!-- 数据统计 -->
 		<view class="stats">
 			<view class="stat-item">
-				<text class="num">12</text>
+				<text class="num">{{userId ? '12' : '--'}}</text>
 				<text class="label">我的表白</text>
 			</view>
 			<view class="stat-item">
-				<text class="num">28</text>
+				<text class="num">{{userId ? '28' : '--'}}</text>
 				<text class="label">获赞</text>
 			</view>
 			<view class="stat-item">
-				<text class="num">5</text>
+				<text class="num">{{userId ? '5' : '--'}}</text>
 				<text class="label">评论</text>
 			</view>
 		</view>
@@ -59,6 +60,34 @@ export default {
 		this.avatarUrl = uni.getStorageSync('avatarUrl')
 		this.nickName = uni.getStorageSync('nickName')
 		this.userId = uni.getStorageSync('userId')
+	},
+	methods: {
+		goToLogin() {
+			uni.navigateTo({
+				url: '/pages/login/login'
+			})
+		},
+		handleMenu(item) {
+			// 检查登录状态
+			if (!this.userId) {
+				uni.showModal({
+					title: '提示',
+					content: '请先登录',
+					success: (res) => {
+						if (res.confirm) {
+							this.goToLogin()
+						}
+					}
+				})
+				return
+			}
+			
+			// 处理菜单点击
+			uni.showToast({
+				title: `点击了${item.name}`,
+				icon: 'none'
+			})
+		}
 	}
 }
 </script>
@@ -100,7 +129,7 @@ export default {
 		}
 	}
 	
-	.edit-btn {
+	.login-btn {
 		font-size: 26rpx;
 		color: #07c160;
 		background: none;
@@ -110,6 +139,10 @@ export default {
 		
 		&::after {
 			border: none;
+		}
+		
+		&:active {
+			opacity: 0.8;
 		}
 	}
 }

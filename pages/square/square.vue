@@ -92,6 +92,21 @@
 		<view class="float-btn" @tap="showActionSheet">
 			<text class="plus-icon">+</text>
 		</view>
+		
+		<!-- 弹出菜单 -->
+		<uni-popup ref="popup" type="bottom" :mask-click="true" @change="popupChange">
+			<view class="action-sheet">
+				<view class="action-item" @tap="handleAction('text')">
+					<text>发布文字</text>
+				</view>
+				<view class="action-item" @tap="handleAction('image')">
+					<text>发布图片</text>
+				</view>
+				<view class="action-item cancel" @tap="hidePopup">
+					<text>取消</text>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -320,17 +335,44 @@ export default {
 				current: current
 			})
 		},
+		// 检查登录状态
+		checkLogin() {
+			const userId = uni.getStorageSync('userId')
+			if (!userId) {
+				uni.showModal({
+					title: '提示',
+					content: '请先登录',
+					success: (res) => {
+						if (res.confirm) {
+							uni.navigateTo({
+								url: '/pages/login/login'
+							})
+						}
+					}
+				})
+				return false
+			}
+			return true
+		},
 		handleLike(index) {
+			if (!this.checkLogin()) return
+			
 			this.posts[index].isLiked = !this.posts[index].isLiked
 			this.posts[index].likes += this.posts[index].isLiked ? 1 : -1
 		},
+		
 		handleComment(index) {
+			if (!this.checkLogin()) return
+			
 			uni.showToast({
 				title: '评论功能开发中',
 				icon: 'none'
 			})
 		},
+		
 		showActionSheet() {
+			if (!this.checkLogin()) return
+			
 			uni.showActionSheet({
 				itemList: ['发布文字', '发布图片'],
 				success: (res) => {
@@ -346,10 +388,33 @@ export default {
 				}
 			})
 		},
+		
+		hidePopup() {
+			this.$refs.popup && this.$refs.popup.close()
+		},
+		handleAction(type) {
+			this.hidePopup()
+			if(type === 'text') {
+				uni.navigateTo({
+					url: '/pages/post/post?type=text'
+				})
+			} else if(type === 'image') {
+				uni.navigateTo({
+					url: '/pages/post/post?type=image'
+				})
+			}
+		},
+		// 查看全部评论
 		viewAllComments(postIndex) {
+			if (!this.checkLogin()) return
+			
 			uni.navigateTo({
 				url: `/pages/comments/comments?postId=${postIndex}`
 			})
+		},
+		// 监听弹窗状态变化
+		popupChange(e) {
+			console.log('popup status:', e.show)
 		}
 	}
 }
@@ -523,7 +588,7 @@ export default {
 		font-size: 60rpx;
 		color: #333;
 		height: 60rpx;
-		line-height: 54rpx;
+		line-height: 54rpx;  /* 微调行高使加号垂直居中 */
 		width: 60rpx;
 		text-align: center;
 		margin: 0;
@@ -532,6 +597,32 @@ export default {
 	
 	&:active {
 		transform: scale(0.95);
+	}
+}
+
+.action-sheet {
+	background: #fff;
+	border-radius: 20rpx 20rpx 0 0;
+	padding-bottom: env(safe-area-inset-bottom);
+	
+	.action-item {
+		height: 110rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 32rpx;
+		color: #333;
+		border-bottom: 1rpx solid #eee;
+		
+		&:active {
+			background-color: #f5f5f5;
+		}
+		
+		&.cancel {
+			color: #999;
+			margin-top: 16rpx;
+			border-bottom: none;
+		}
 	}
 }
 </style> 

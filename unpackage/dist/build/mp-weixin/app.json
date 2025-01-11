@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/square/square",
     "pages/login/login",
+    "pages/square/square",
     "pages/discover/discover",
     "pages/mine/mine",
     "pages/comments/comments"

@@ -30,6 +30,20 @@
 			"style": {
 				"navigationBarTitleText": "评论详情"
 			}
+		},
+		{
+			"path": "pages/post/post",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#ffffff"
+			}
+		},
+		{
+			"path": "pages/video-player/video-player",
+			"style": {
+				"navigationStyle": "custom",
+				"backgroundColor": "#000000"
+			}
 		}
 	],
 	"globalStyle": {

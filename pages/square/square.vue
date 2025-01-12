@@ -93,20 +93,7 @@
 			<text class="plus-icon">+</text>
 		</view>
 		
-		<!-- 弹出菜单 -->
-		<uni-popup ref="popup" type="bottom" :mask-click="true" @change="popupChange">
-			<view class="action-sheet">
-				<view class="action-item" @tap="handleAction('text')">
-					<text>发布文字</text>
-				</view>
-				<view class="action-item" @tap="handleAction('image')">
-					<text>发布图片</text>
-				</view>
-				<view class="action-item cancel" @tap="hidePopup">
-					<text>取消</text>
-				</view>
-			</view>
-		</uni-popup>
+		
 	</view>
 </template>
 
@@ -373,18 +360,52 @@ export default {
 		showActionSheet() {
 			if (!this.checkLogin()) return
 			
+			// 直接跳转到相应页面
+			const handlePublish = (type) => {
+				if (type === 'text') {
+					uni.navigateTo({
+						url: '/pages/post/post?type=text'
+					})
+				} else if (type === 'image') {
+					uni.chooseImage({
+						count: 9,
+						sizeType: ['compressed'],
+						sourceType: ['album'],
+						success: (res) => {
+							const images = res.tempFilePaths.map(path => ({
+								type: 'image',
+								path: path
+							}))
+							uni.navigateTo({
+								url: `/pages/post/post?type=image&images=${JSON.stringify(images)}`
+							})
+						}
+					})
+				} else {
+					uni.chooseVideo({
+						sourceType: ['album'],
+						maxDuration: 60,
+						camera: 'back',
+						success: (res) => {
+							const video = [{
+								type: 'video',
+								path: res.tempFilePath,
+								cover: res.thumbTempFilePath
+							}]
+							uni.navigateTo({
+								url: `/pages/post/post?type=image&images=${JSON.stringify(video)}`
+							})
+						}
+					})
+				}
+			}
+			
+			// 直接显示菜单并处理选择
 			uni.showActionSheet({
-				itemList: ['发布文字', '发布图片'],
+				itemList: ['发布文字', '发布图片', '发布视频'],
 				success: (res) => {
-					if(res.tapIndex === 0) {
-						uni.navigateTo({
-							url: '/pages/post/post?type=text'
-						})
-					} else if(res.tapIndex === 1) {
-						uni.navigateTo({
-							url: '/pages/post/post?type=image'
-						})
-					}
+					const types = ['text', 'image', 'video']
+					handlePublish(types[res.tapIndex])
 				}
 			})
 		},
@@ -392,6 +413,7 @@ export default {
 		hidePopup() {
 			this.$refs.popup && this.$refs.popup.close()
 		},
+		
 		handleAction(type) {
 			this.hidePopup()
 			if(type === 'text') {

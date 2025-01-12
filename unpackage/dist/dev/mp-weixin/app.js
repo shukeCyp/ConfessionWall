@@ -7,6 +7,8 @@ if (!Math) {
   "./pages/discover/discover.js";
   "./pages/mine/mine.js";
   "./pages/comments/comments.js";
+  "./pages/post/post.js";
+  "./pages/video-player/video-player.js";
 }
 const lazyCodeLoading = "requiredComponents";
 const App = {

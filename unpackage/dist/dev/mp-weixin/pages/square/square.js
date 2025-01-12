@@ -259,18 +259,49 @@ const _sfc_main = {
     showActionSheet() {
       if (!this.checkLogin())
         return;
+      const handlePublish = (type) => {
+        if (type === "text") {
+          common_vendor.index.navigateTo({
+            url: "/pages/post/post?type=text"
+          });
+        } else if (type === "image") {
+          common_vendor.index.chooseImage({
+            count: 9,
+            sizeType: ["compressed"],
+            sourceType: ["album"],
+            success: (res) => {
+              const images = res.tempFilePaths.map((path) => ({
+                type: "image",
+                path
+              }));
+              common_vendor.index.navigateTo({
+                url: `/pages/post/post?type=image&images=${JSON.stringify(images)}`
+              });
+            }
+          });
+        } else {
+          common_vendor.index.chooseVideo({
+            sourceType: ["album"],
+            maxDuration: 60,
+            camera: "back",
+            success: (res) => {
+              const video = [{
+                type: "video",
+                path: res.tempFilePath,
+                cover: res.thumbTempFilePath
+              }];
+              common_vendor.index.navigateTo({
+                url: `/pages/post/post?type=image&images=${JSON.stringify(video)}`
+              });
+            }
+          });
+        }
+      };
       common_vendor.index.showActionSheet({
-        itemList: ["发布文字", "发布图片"],
+        itemList: ["发布文字", "发布图片", "发布视频"],
         success: (res) => {
-          if (res.tapIndex === 0) {
-            common_vendor.index.navigateTo({
-              url: "/pages/post/post?type=text"
-            });
-          } else if (res.tapIndex === 1) {
-            common_vendor.index.navigateTo({
-              url: "/pages/post/post?type=image"
-            });
-          }
+          const types = ["text", "image", "video"];
+          handlePublish(types[res.tapIndex]);
         }
       });
     },
@@ -303,10 +334,6 @@ const _sfc_main = {
     }
   }
 };
-if (!Array) {
-  const _component_uni_popup = common_vendor.resolveComponent("uni-popup");
-  _component_uni_popup();
-}
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_vendor.f($data.bannerList, (item, index, i0) => {
@@ -374,16 +401,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     c: common_vendor.o((...args) => $options.onRefresh && $options.onRefresh(...args)),
     d: $data.isRefreshing,
-    e: common_vendor.o((...args) => $options.showActionSheet && $options.showActionSheet(...args)),
-    f: common_vendor.o(($event) => $options.handleAction("text")),
-    g: common_vendor.o(($event) => $options.handleAction("image")),
-    h: common_vendor.o((...args) => $options.hidePopup && $options.hidePopup(...args)),
-    i: common_vendor.sr("popup", "67c1daae-0"),
-    j: common_vendor.o($options.popupChange),
-    k: common_vendor.p({
-      type: "bottom",
-      ["mask-click"]: true
-    })
+    e: common_vendor.o((...args) => $options.showActionSheet && $options.showActionSheet(...args))
   };
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

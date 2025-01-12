@@ -4,7 +4,9 @@
     "pages/login/login",
     "pages/discover/discover",
     "pages/mine/mine",
-    "pages/comments/comments"
+    "pages/comments/comments",
+    "pages/post/post",
+    "pages/video-player/video-player"
   ],
   "window": {
     "navigationBarTextStyle": "black",

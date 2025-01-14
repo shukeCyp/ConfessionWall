@@ -44,6 +44,13 @@
 				"navigationStyle": "custom",
 				"backgroundColor": "#000000"
 			}
+		},
+		{
+			"path": "pages/my-posts/my-posts",
+			"style": {
+				"navigationBarTitleText": "我的表白",
+				"enablePullDownRefresh": false
+			}
 		}
 	],
 	"globalStyle": {

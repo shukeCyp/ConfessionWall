@@ -1,87 +1,65 @@
 <template>
-	<view class="square-container">
-		<!-- 轮播图区域 -->
-		<swiper class="banner" circular autoplay interval="3000" duration="500">
-			<swiper-item v-for="(item, index) in bannerList" :key="index">
-				<image :src="item.image" mode="aspectFill" @tap="handleBanner(item)"></image>
-			</swiper-item>
-		</swiper>
-		
-		<!-- 帖子列表 -->
-		<scroll-view scroll-y class="post-list" refresher-enabled @refresherrefresh="onRefresh" 
-			:refresher-triggered="isRefreshing">
-			<!-- 列表顶部提示 -->
-			<view class="list-header">
-				<text>下拉刷新内容</text>
-			</view>
+	<view class="page-container">
+		<scroll-view 
+			class="square-container" 
+			scroll-y 
+			refresher-enabled 
+			:refresher-triggered="isRefreshing"
+			@refresherrefresh="onRefresh"
+			@scrolltolower="onLoadMore"
+		>
+			<!-- 轮播图区域 -->
+			<swiper class="banner" circular autoplay interval="3000" duration="500">
+				<swiper-item v-for="(item, index) in bannerList" :key="index">
+					<image :src="item.image" mode="aspectFill"></image>
+				</swiper-item>
+			</swiper>
 			
-			<view class="post-item" v-for="(item, index) in posts" :key="index">
-				<!-- 头像和用户信息 -->
-				<image class="avatar" :src="item.avatar" mode="aspectFill"></image>
-				<view class="content-box">
-					<view class="nickname">{{item.nickname}}</view>
-					<view class="content">{{item.content}}</view>
-					
-					<!-- 媒体内容区域 -->
-					<block v-if="item.type === 'image'">
-						<view class="single-image">
-							<image :src="item.images[0]" mode="widthFix" @tap="previewImage(item.images, 0)"></image>
-						</view>
-					</block>
-					
-					<block v-if="item.type === 'images'">
-						<view class="grid-images">
-							<image v-for="(img, imgIndex) in item.images" 
-								:key="imgIndex" 
-								:src="img" 
-								mode="aspectFill"
-								@tap="previewImage(item.images, imgIndex)">
-							</image>
-						</view>
-					</block>
-					
-					<block v-if="item.type === 'video'">
-						<view class="video-container">
-							<video :src="item.video" 
-								:poster="item.videoCover"
-								object-fit="cover"
-								@tap="playVideo">
-							</video>
-						</view>
-					</block>
-					
-					<!-- 互动信息 -->
-					<view class="interaction-info">
-						<text class="time">{{item.time}}</text>
-						<view class="actions">
-							<view class="action-item" @tap="handleLike(index)">
-								<text :class="['cuIcon-appreciate', {'active': item.isLiked}]"></text>
-							</view>
-							<view class="action-item" @tap="handleComment(index)">
-								<text class="cuIcon-comment"></text>
-							</view>
-						</view>
-					</view>
-					
-					<!-- 点赞和评论区域 -->
-					<view class="interaction-box" v-if="item.likes > 0 || item.comments.length > 0">
-						<!-- 点赞列表 -->
-						<view class="like-list" v-if="item.likes > 0">
-							<text class="cuIcon-heart" style="color: #ff5649;"></text>
-							<text>{{item.likeUsers.join('、')}}等{{item.likes}}人点赞</text>
+			<!-- 帖子列表 -->
+			<view class="post-list">
+				<view class="post-item" v-for="(item, index) in posts" :key="index">
+					<!-- 头像和用户信息 -->
+					<image class="avatar" :src="item.avatar" mode="aspectFill"></image>
+					<view class="content-box">
+						<view class="nickname">{{item.nickname}}</view>
+						<view class="content" :class="{'empty-content': !item.content}">
+							{{item.content}}
 						</view>
 						
-						<!-- 评论列表 -->
-						<view class="comment-list" v-if="item.comments.length > 0">
-							<!-- 显示前5条评论 -->
-							<view class="comment-item" v-for="(comment, cIndex) in item.comments.slice(0, 5)" :key="cIndex">
-								<text class="comment-user">{{comment.nickname}}</text>
-								<text class="comment-content">：{{comment.content}}</text>
+						<!-- 图片展示区域 -->
+						<view class="image-grid" v-if="item.media_list && item.media_list[0]?.type === 0">
+							<image 
+								v-for="(media, mediaIndex) in item.media_list" 
+								:key="mediaIndex"
+								:src="`https://${media.url}`"
+								mode="aspectFill"
+								@tap="previewImage(item.media_list.map(m => `https://${m.url}`), mediaIndex)"
+								@error="handleImageError($event, index, mediaIndex)"
+							/>
+						</view>
+						
+						<!-- 视频展示区域 -->
+						<view class="video-container" v-if="item.media_list && item.media_list[0]?.type === 1">
+							<view class="video-wrapper">
+								<video 
+									:src="`https://${item.media_list[0].url}`"
+									:poster="`https://${item.media_list[0].url}?x-oss-process=video/snapshot,t_1000,f_jpg`"
+									object-fit="contain"
+									@tap="playVideo(item.media_list[0].url)"
+									:style="{
+										width: '40vw',
+										aspectRatio: `${item.media_list[0].width} / ${item.media_list[0].height}`
+									}"
+									show-play-btn="true"
+									controls="{{false}}"
+									show-center-play-btn="{{false}}"
+								></video>
 							</view>
-							<!-- 如果评论数超过5条，显示查看更多 -->
-							<view class="view-more" v-if="item.comments.length > 5" @tap="viewAllComments(index)">
-								查看全部{{item.comments.length}}条评论 >
-							</view>
+						</view>
+						
+						<view class="time">{{item.time}}</view>
+						<view class="action-menu">
+							<text class="cuIcon-more"></text>
 						</view>
 					</view>
 				</view>
@@ -103,223 +81,117 @@ export default {
 		return {
 			isRefreshing: false,
 			bannerList: [
-				{ image: '/static/banner.png', url: '' },
-				{ image: '/static/banner.png', url: '' },
-				{ image: '/static/banner.png', url: '' }
+				{ image: '/static/banner.png' },
+				{ image: '/static/banner.png' },
+				{ image: '/static/banner.png' }
 			],
-			posts: [
-				// 纯文本
-				{
-					avatar: '/static/logo.png',
-					nickname: '匿名用户',
-					time: '刚刚',
-					content: '今天天气真好，想和你一起散步',
-					type: 'text',
-					likes: 12,
-					likeUsers: ['张三', '李四', '王五'],
-					comments: [
-						{
-							nickname: '张三',
-							content: '真不错呢！',
-							time: '5分钟前'
-						},
-						{
-							nickname: '李四',
-							content: '校园生活真美好',
-							time: '3分钟前'
-						},
-						{
-							nickname: '王五',
-							content: '期待遇见你',
-							time: '2分钟前'
-						},
-						{
-							nickname: '赵六',
-							content: '加油加油！',
-							time: '1分钟前'
-						},
-						{
-							nickname: '小明',
-							content: '太棒了',
-							time: '刚刚'
-						},
-						{
-							nickname: '小红',
-							content: '继续努力',
-							time: '刚刚'
-						}
-					],
-					isLiked: false
-				},
-				// 单图文
-				{
-					avatar: '/static/logo.png',
-					nickname: '匿名用户',
-					time: '5分钟前',
-					content: '期待与你相遇在校园的每个角落',
-					type: 'image',
-					images: ['/static/banner.png'],
-					likes: 8,
-					likeUsers: ['张三', '李四'],
-					comments: [
-						{
-							nickname: '张三',
-							content: '真不错呢！',
-							time: '5分钟前'
-						},
-						{
-							nickname: '李四',
-							content: '校园生活真美好',
-							time: '3分钟前'
-						},
-						{
-							nickname: '王五',
-							content: '期待遇见你',
-							time: '2分钟前'
-						},
-						{
-							nickname: '赵六',
-							content: '加油加油！',
-							time: '1分钟前'
-						},
-						{
-							nickname: '小明',
-							content: '太棒了',
-							time: '刚刚'
-						},
-						{
-							nickname: '小红',
-							content: '继续努力',
-							time: '刚刚'
-						}
-					],
-					isLiked: false
-				},
-				// 九宫格
-				{
-					avatar: '/static/logo.png',
-					nickname: '匿名用户',
-					time: '10分钟前',
-					content: '美好的校园生活',
-					type: 'images',
-					images: [
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png',
-						'/static/banner.png'
-					],
-					likes: 15,
-					likeUsers: ['张三', '李四', '王五'],
-					comments: [
-						{
-							nickname: '张三',
-							content: '真不错呢！',
-							time: '5分钟前'
-						},
-						{
-							nickname: '李四',
-							content: '校园生活真美好',
-							time: '3分钟前'
-						},
-						{
-							nickname: '王五',
-							content: '期待遇见你',
-							time: '2分钟前'
-						},
-						{
-							nickname: '赵六',
-							content: '加油加油！',
-							time: '1分钟前'
-						},
-						{
-							nickname: '小明',
-							content: '太棒了',
-							time: '刚刚'
-						},
-						{
-							nickname: '小红',
-							content: '继续努力',
-							time: '刚刚'
-						}
-					],
-					isLiked: false
-				},
-				// 视频
-				{
-					avatar: '/static/logo.png',
-					nickname: '匿名用户',
-					time: '30分钟前',
-					content: '校园的一天',
-					type: 'video',
-					video: '/static/video.mp4',
-					videoCover: '/static/banner.png',
-					likes: 20,
-					likeUsers: ['张三', '李四', '王五'],
-					comments: [
-						{
-							nickname: '张三',
-							content: '真不错呢！',
-							time: '5分钟前'
-						},
-						{
-							nickname: '李四',
-							content: '校园生活真美好',
-							time: '3分钟前'
-						},
-						{
-							nickname: '王五',
-							content: '期待遇见你',
-							time: '2分钟前'
-						},
-						{
-							nickname: '赵六',
-							content: '加油加油！',
-							time: '1分钟前'
-						},
-						{
-							nickname: '小明',
-							content: '太棒了',
-							time: '刚刚'
-						},
-						{
-							nickname: '小红',
-							content: '继续努力',
-							time: '刚刚'
-						}
-					],
-					isLiked: false
-				}
-			]
+			posts: [],
+			page: 1,
+			pageSize: 10,
+			hasMore: true,
+			isLoading: false,
+			screenWidth: 0
 		}
 	},
+	onLoad() {
+		// 获取屏幕宽度
+		const systemInfo = uni.getSystemInfoSync()
+		this.screenWidth = systemInfo.windowWidth
+		this.loadPosts()
+	},
 	methods: {
-		handleBanner(item) {
-			if(item.url) {
-				uni.navigateTo({
-					url: item.url
-				})
+		loadPosts(refresh = false) {
+			if (this.isLoading) return
+			
+			if (refresh) {
+				this.page = 1
+				this.hasMore = true
 			}
+			
+			this.isLoading = true
+			uni.request({
+				url: `https://confession.lyvideo.top/get_posts?state=1&page=${this.page}&page_size=${this.pageSize}`,
+				method: 'GET',
+				success: (res) => {
+					const { data, total_pages } = res.data
+					console.log('API返回的原始数据：', data)
+					
+					const formattedPosts = data.map(post => {
+						// 基础数据
+						const formattedPost = {
+							id: post.id,
+							avatar: post.avatar_url ? `${post.avatar_url}` : '/static/logo.png',
+							nickname: post.nickname || '匿名用户',
+							content: post.content,
+							time: this.formatTime(post.created_at),
+							media_list: post.media_list || []
+						}
+						
+						// 打印每个帖子的媒体列表
+						console.log('帖子ID:', post.id, '的媒体列表:', post.media_list)
+						
+						return formattedPost
+					})
+					
+					if (refresh) {
+						this.posts = formattedPosts
+					} else {
+						this.posts = [...this.posts, ...formattedPosts]
+					}
+					
+					this.hasMore = this.page < total_pages
+					if (this.hasMore) {
+						this.page++
+					}
+				},
+				complete: () => {
+					this.isLoading = false
+					if (refresh) {
+						this.isRefreshing = false
+					}
+				}
+			})
 		},
+		
+		// 格式化时间
+		formatTime(timeStr) {
+			const date = new Date(timeStr)
+			const now = new Date()
+			const diff = now - date
+			
+			// 小于1分钟
+			if (diff < 60000) {
+				return '刚刚'
+			}
+			// 小于1小时
+			if (diff < 3600000) {
+				return Math.floor(diff / 60000) + '分钟前'
+			}
+			// 小于24小时
+			if (diff < 86400000) {
+				return Math.floor(diff / 3600000) + '小时前'
+			}
+			// 大于24小时
+			return Math.floor(diff / 86400000) + '天前'
+		},
+		
 		onRefresh() {
 			this.isRefreshing = true
-			// 模拟刷新
-			setTimeout(() => {
-				this.isRefreshing = false
-				uni.showToast({
-					title: '刷新成功',
-					icon: 'none'
-				})
-			}, 1000)
+			this.loadPosts(true)
 		},
-		previewImage(images, current) {
+		
+		onLoadMore() {
+			if (this.hasMore && !this.isLoading) {
+				this.loadPosts()
+			}
+		},
+		
+		// 添加图片预览方法
+		previewImage(urls, current) {
+			console.log('预览图片URLs:', urls)
 			uni.previewImage({
-				urls: images,
-				current: current
+				urls: urls,
+				current: urls[current]
 			})
 		},
 		// 检查登录状态
@@ -347,7 +219,7 @@ export default {
 			this.posts[index].isLiked = !this.posts[index].isLiked
 			this.posts[index].likes += this.posts[index].isLiked ? 1 : -1
 		},
-		
+
 		handleComment(index) {
 			if (!this.checkLogin()) return
 			
@@ -402,9 +274,9 @@ export default {
 			
 			// 直接显示菜单并处理选择
 			uni.showActionSheet({
-				itemList: ['发布文字', '发布图片', '发布视频'],
+				itemList: ['发布文字', '发布图片'],
 				success: (res) => {
-					const types = ['text', 'image', 'video']
+					const types = ['text', 'image']
 					handlePublish(types[res.tapIndex])
 				}
 			})
@@ -437,6 +309,33 @@ export default {
 		// 监听弹窗状态变化
 		popupChange(e) {
 			console.log('popup status:', e.show)
+		},
+		// 添加视频播放方法
+		playVideo(url) {
+			uni.navigateTo({
+				url: '/pages/video-player/video-player'
+			})
+			// 传递视频数据
+			uni.$emit('video-data', {
+				url: url,
+				cover: url
+			})
+		},
+		// 计算视频显示宽度
+		getVideoWidth(media) {
+			const maxWidth = this.screenWidth * 0.4 // 屏幕宽度的40%
+			const ratio = media.width / media.height
+			return Math.min(maxWidth, media.width)
+		},
+		
+		// 计算视频显示高度
+		getVideoHeight(media) {
+			const width = this.getVideoWidth(media)
+			return width / (media.width / media.height)
+		},
+		handleImageError(e, postIndex, mediaIndex) {
+			// 设置默认图片
+			this.posts[postIndex].media_list[mediaIndex].url = 'static/default-image.png'
 		}
 	}
 }
@@ -444,8 +343,8 @@ export default {
 
 <style lang="scss">
 .square-container {
-	min-height: 100vh;
-	background-color: #f7f7f7;
+	height: 100vh;
+	background: #fff;
 }
 
 .banner {
@@ -457,56 +356,59 @@ export default {
 	}
 }
 
-.list-header {
-	text-align: center;
-	padding: 20rpx 0;
-	font-size: 24rpx;
-	color: #999;
-}
-
 .post-list {
-	padding: 0 0 120rpx;
+	padding: 0;
 	
 	.post-item {
-		background-color: #fff;
-		padding: 30rpx;
+		background: #fff;
+		padding: 24rpx 32rpx;
+		border-bottom: 1rpx solid #e0e0e0;
 		display: flex;
-		border-bottom: 1rpx solid #eee;
 		
 		.avatar {
 			width: 80rpx;
 			height: 80rpx;
 			border-radius: 8rpx;
-			margin-right: 20rpx;
+			margin-right: 24rpx;
 			flex-shrink: 0;
 		}
 		
 		.content-box {
 			flex: 1;
+			position: relative;
 			
 			.nickname {
-				font-size: 30rpx;
+				font-size: 32rpx;
 				color: #576b95;
-				font-weight: 500;
-				margin-bottom: 10rpx;
-			}
-			
-			.content {
-				font-size: 28rpx;
-				color: #333;
-				line-height: 1.6;
 				margin-bottom: 16rpx;
 			}
 			
-			.single-image {
-				margin: 16rpx 0;
-				image {
-					max-width: 400rpx;
-					border-radius: 8rpx;
+			.content {
+				font-size: 32rpx;
+				color: #333;
+				line-height: 1.5;
+				margin-bottom: 20rpx;
+				min-height: 45rpx;
+				
+				&.empty-content {
+					margin-bottom: 24rpx;
 				}
 			}
 			
-			.grid-images {
+			.time {
+				font-size: 24rpx;
+				color: #999;
+			}
+			
+			.action-menu {
+				position: absolute;
+				right: 0;
+				top: 0;
+				color: #999;
+				padding: 10rpx;
+			}
+			
+			.image-grid {
 				display: grid;
 				grid-template-columns: repeat(3, 1fr);
 				gap: 6rpx;
@@ -514,77 +416,25 @@ export default {
 				
 				image {
 					width: 100%;
-					height: 220rpx;
+					aspect-ratio: 1;
+					height: auto;
 					border-radius: 8rpx;
 				}
 			}
 			
 			.video-container {
 				margin: 16rpx 0;
-				video {
-					width: 100%;
-					height: 400rpx;
+				
+				.video-wrapper {
+					position: relative;
+					display: inline-block;
 					border-radius: 8rpx;
-				}
-			}
-			
-			.interaction-info {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				margin-top: 16rpx;
-				
-				.time {
-					font-size: 24rpx;
-					color: #999;
-				}
-			}
-			
-			.interaction-box {
-				margin-top: 16rpx;
-				background-color: #f7f7f7;
-				border-radius: 6rpx;
-				padding: 16rpx;
-				
-				.like-list {
-					display: flex;
-					align-items: center;
-					font-size: 26rpx;
-					color: #576b95;
+					overflow: hidden;
+					background: #000;
 					
-					.cuIcon-heart {
-						margin-right: 10rpx;
-					}
-				}
-				
-				.comment-list {
-					margin-top: 10rpx;
-					padding-top: 10rpx;
-					border-top: 1rpx solid #eee;
-					
-					.comment-item {
-						font-size: 26rpx;
-						line-height: 1.6;
-						padding: 6rpx 0;
-						
-						.comment-user {
-							color: #576b95;
-							font-weight: 500;
-						}
-						
-						.comment-content {
-							color: #333;
-						}
-					}
-					
-					.view-more {
-						font-size: 26rpx;
-						color: #576b95;
-						padding: 10rpx 0;
-						
-						&:active {
-							opacity: 0.7;
-						}
+					video {
+						display: block;
+						border-radius: 8rpx;
 					}
 				}
 			}
@@ -598,7 +448,7 @@ export default {
 	bottom: 140rpx;
 	width: 100rpx;
 	height: 100rpx;
-	background: #fff;
+	background: #f8f8f8;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -610,15 +460,9 @@ export default {
 		font-size: 60rpx;
 		color: #333;
 		height: 60rpx;
-		line-height: 54rpx;  /* 微调行高使加号垂直居中 */
+		line-height: 54rpx;
 		width: 60rpx;
 		text-align: center;
-		margin: 0;
-		padding: 0;
-	}
-	
-	&:active {
-		transform: scale(0.95);
 	}
 }
 

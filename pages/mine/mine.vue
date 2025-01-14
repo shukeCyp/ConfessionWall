@@ -14,15 +14,15 @@
 		<!-- 数据统计 -->
 		<view class="stats">
 			<view class="stat-item">
-				<text class="num">{{userId ? '12' : '--'}}</text>
+				<text class="num">{{userId ? userStats.totalPosts : '--'}}</text>
 				<text class="label">我的表白</text>
 			</view>
 			<view class="stat-item">
-				<text class="num">{{userId ? '28' : '--'}}</text>
+				<text class="num">{{userId ? userStats.likes : '--'}}</text>
 				<text class="label">获赞</text>
 			</view>
 			<view class="stat-item">
-				<text class="num">{{userId ? '5' : '--'}}</text>
+				<text class="num">{{userId ? userStats.comments : '--'}}</text>
 				<text class="label">评论</text>
 			</view>
 		</view>
@@ -47,6 +47,14 @@ export default {
 			avatarUrl: '',
 			nickName: '',
 			userId: '',
+			userStats: {
+				postCount: 0,
+				pendingCount: 0,
+				rejectedCount: 0,
+				totalPosts: 0, // 总帖子数
+				likes: 0,      // 获赞数
+				comments: 0    // 评论数
+			},
 			menuItems: [
 				{ name: '我的表白', icon: 'cuIcon-favor' },
 				{ name: '我的评论', icon: 'cuIcon-comment' },
@@ -57,18 +65,67 @@ export default {
 	},
 	onShow() {
 		// 从本地存储获取用户信息
-		this.avatarUrl = uni.getStorageSync('avatarUrl')
-		this.nickName = uni.getStorageSync('nickName')
 		this.userId = uni.getStorageSync('userId')
+		if (this.userId) {
+			this.loadUserInfo()
+		} else {
+			this.avatarUrl = ''
+			this.nickName = ''
+			this.resetUserStats()
+		}
 	},
 	methods: {
+		// 重置用户统计数据
+		resetUserStats() {
+			this.userStats = {
+				postCount: 0,
+				pendingCount: 0,
+				rejectedCount: 0,
+				totalPosts: 0,
+				likes: 0,
+				comments: 0
+			}
+		},
+		
+		// 加载用户信息
+		loadUserInfo() {
+			uni.request({
+				url: `https://confession.lyvideo.top/get_userinfo/${this.userId}`,
+				method: 'GET',
+				success: (res) => {
+					if (res.data) {
+						this.avatarUrl = res.data.avatar_url
+						this.nickName = res.data.nickname
+						
+						// 更新统计数据
+						this.userStats.postCount = res.data.post_count || 0
+						this.userStats.pendingCount = res.data.pending_count || 0
+						this.userStats.rejectedCount = res.data.rejected_count || 0
+						this.userStats.totalPosts = this.userStats.postCount + 
+							this.userStats.pendingCount + 
+							this.userStats.rejectedCount
+						
+						// 获赞和评论数暂时写死为0
+						this.userStats.likes = 0
+						this.userStats.comments = 0
+						
+						// 保存到本地存储
+						uni.setStorageSync('avatarUrl', this.avatarUrl)
+						uni.setStorageSync('nickName', this.nickName)
+					}
+				},
+				fail: (err) => {
+					console.error('获取用户信息失败：', err)
+				}
+			})
+		},
+		
 		goToLogin() {
 			uni.navigateTo({
 				url: '/pages/login/login'
 			})
 		},
 		handleMenu(item) {
-			// 检查登录状态
 			if (!this.userId) {
 				uni.showModal({
 					title: '提示',
@@ -82,11 +139,32 @@ export default {
 				return
 			}
 			
-			// 处理菜单点击
-			uni.showToast({
-				title: `点击了${item.name}`,
-				icon: 'none'
-			})
+			// 根据菜单项处理跳转
+			switch(item.name) {
+				case '我的表白':
+					uni.navigateTo({
+						url: '/pages/my-posts/my-posts'
+					})
+					break;
+				case '我的评论':
+					uni.showToast({
+						title: '评论功能开发中',
+						icon: 'none'
+					})
+					break;
+				case '我的点赞':
+					uni.showToast({
+						title: '点赞功能开发中',
+						icon: 'none'
+					})
+					break;
+				case '设置':
+					uni.showToast({
+						title: '设置功能开发中',
+						icon: 'none'
+					})
+					break;
+			}
 		}
 	}
 }

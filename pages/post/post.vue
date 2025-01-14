@@ -182,10 +182,53 @@ export default {
 			this.isVideoHorizontal = width > height
 		},
 		
-		publish() {
+		// 获取access_token
+		getAccessToken() {
+			return new Promise((resolve, reject) => {
+				uni.request({
+					url: 'https://confession.lyvideo.top/wx/token', // 您的后端接口
+					method: 'GET',
+					success: (res) => {
+						if (res.data && res.data.access_token) {
+							resolve(res.data.access_token)
+						} else {
+							reject(new Error('获取access_token失败'))
+						}
+					},
+					fail: reject
+				})
+			})
+		},
+		
+		// 内容安全检查
+		async checkContentSecurity(content) {
+			try {
+				const access_token = await this.getAccessToken()
+				const res = await uni.request({
+					url: `https://api.weixin.qq.com/wxa/msg_sec_check?access_token=${access_token}`,
+					method: 'POST',
+					data: {
+						content: content
+					}
+				})
+				
+				// 检查返回结果
+				if (res.data.errcode === 0) {
+					return true
+				} else {
+					console.error('内容安全检查失败：', res.data)
+					throw new Error(res.data.errmsg || '内容包含违规信息')
+				}
+			} catch (err) {
+				console.error('内容安全检查出错：', err)
+				throw err
+			}
+		},
+		
+		// 修改 publish 方法
+		async publish() {
 			if (!this.canPublish) return
 			
-			// 获取本地存储的用户ID
 			const userId = uni.getStorageSync('userId')
 			if (!userId) {
 				uni.showToast({
@@ -201,45 +244,58 @@ export default {
 				mask: true
 			})
 			
-			// 先创建帖子
-			uni.request({
-				url: `https://confession.lyvideo.top/posts?user_id=${userId}`,
-				method: 'POST',
-				data: {
-					content: this.content.trim()
-				},
-				header: {
-					'accept': 'application/json',
-					'Content-Type': 'application/json'
-				},
-				success: (res) => {
-					console.log('帖子创建成功，返回数据：', res.data)
-					
-					// 如果有图片或视频，继续上传
-					if (this.mediaList.length > 0) {
-						this.uploadMedia(res.data.id)
-							.then(() => {
-								uni.hideLoading()
-								this.handleUploadComplete()
-							})
-							.catch(err => {
-								uni.hideLoading()
-								this.handleUploadError(err)
-							})
-					} else {
-						uni.hideLoading()
-						this.handleUploadComplete()
-					}
-				},
-				fail: (err) => {
-					console.error('发布失败：', err)
-					uni.hideLoading()
-					uni.showToast({
-						title: '发布失败，请重试',
-						icon: 'none'
-					})
+			try {
+				// 先进行内容安全检查
+				if (this.content.trim()) {
+					await this.checkContentSecurity(this.content.trim())
 				}
-			})
+				
+				// 内容检查通过后，继续发布流程
+				uni.request({
+					url: `https://confession.lyvideo.top/posts?user_id=${userId}`,
+					method: 'POST',
+					data: {
+						content: this.content.trim()
+					},
+					header: {
+						'accept': 'application/json',
+						'Content-Type': 'application/json'
+					},
+					success: (res) => {
+						console.log('帖子创建成功，返回数据：', res.data)
+						
+						if (this.mediaList.length > 0) {
+							this.uploadMedia(res.data.id)
+								.then(() => {
+									uni.hideLoading()
+									this.handleUploadComplete()
+								})
+								.catch(err => {
+									uni.hideLoading()
+									this.handleUploadError(err)
+								})
+						} else {
+							uni.hideLoading()
+							this.handleUploadComplete()
+						}
+					},
+					fail: (err) => {
+						console.error('发布失败：', err)
+						uni.hideLoading()
+						uni.showToast({
+							title: '发布失败，请重试',
+							icon: 'none'
+						})
+					}
+				})
+			} catch (err) {
+				uni.hideLoading()
+				uni.showToast({
+					title: err.message || '内容审核未通过，请修改后重试',
+					icon: 'none',
+					duration: 2000
+				})
+			}
 		},
 		
 		// 上传媒体文件

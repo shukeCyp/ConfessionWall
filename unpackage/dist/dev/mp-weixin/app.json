@@ -6,7 +6,8 @@
     "pages/mine/mine",
     "pages/comments/comments",
     "pages/post/post",
-    "pages/video-player/video-player"
+    "pages/video-player/video-player",
+    "pages/my-posts/my-posts"
   ],
   "window": {
     "navigationBarTextStyle": "black",

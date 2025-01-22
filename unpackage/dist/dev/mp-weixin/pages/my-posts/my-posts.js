@@ -115,7 +115,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     c: $data.currentStatus === 0 ? 1 : "",
     d: common_vendor.o(($event) => $options.switchStatus(0)),
     e: common_vendor.f($data.posts, (item, index, i0) => {
-      var _a, _b, _c, _d;
+      var _a, _b;
       return common_vendor.e({
         a: item.avatar,
         b: common_vendor.t(item.nickname),
@@ -132,15 +132,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
           };
         })
       } : {}, {
-        g: item.media_list && ((_c = item.media_list[0]) == null ? void 0 : _c.type) === 1
-      }, item.media_list && ((_d = item.media_list[0]) == null ? void 0 : _d.type) === 1 ? {
-        h: `https://${item.media_list[0].url}`,
-        i: `https://${item.media_list[0].url}?x-oss-process=video/snapshot,t_1000,f_jpg`,
-        j: common_vendor.o(($event) => $options.playVideo(item.media_list[0].url), index),
-        k: `${item.media_list[0].width} / ${item.media_list[0].height}`
-      } : {}, {
-        l: common_vendor.t(item.time),
-        m: index
+        g: common_vendor.t(item.time),
+        h: index
       });
     }),
     f: common_vendor.t($data.currentStatus === 0 ? "审核中" : ""),

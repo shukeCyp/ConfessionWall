@@ -1,1 +1,0 @@
-<view class="player-container"><video src="{{a}}" poster="{{b}}" autoplay show-center-play-btn="{false}" controls object-fit="contain" class="video-player" bindended="{{c}}"></video></view>

@@ -5,8 +5,13 @@ const _sfc_main = {
   data() {
     return {
       isAgree: false,
-      apiBaseUrl: "https://confession.lyvideo.top"
-      // 修改为正确的域名
+      apiBaseUrl: "https://confession.lyvideo.top",
+      showUserInfoDialog: false,
+      tempUserInfo: {
+        avatarUrl: "/static/logo.png",
+        // 设置默认头像
+        nickName: ""
+      }
     };
   },
   methods: {
@@ -18,23 +23,63 @@ const _sfc_main = {
         });
         return;
       }
-      common_vendor.index.getUserInfo({
-        success: (userRes) => {
-          console.log("用户信息：", userRes.userInfo);
-          const userInfo = userRes.userInfo;
-          common_vendor.index.setStorageSync("avatarUrl", userInfo.avatarUrl);
-          common_vendor.index.setStorageSync("gender", userInfo.gender);
-          common_vendor.index.setStorageSync("nickName", userInfo.nickName);
-          this.wxLogin(userInfo);
+      this.showUserInfoDialog = true;
+    },
+    // 选择头像回调
+    onChooseAvatar(e) {
+      console.log("选择头像回调：" + e.detail.avatarUrl);
+      common_vendor.wx$1.getFileSystemManager().saveFile({
+        tempFilePath: e.detail.avatarUrl,
+        success: async (res) => {
+          const savedFilePath = res.savedFilePath;
+          console.log("保存的头像文件路径：" + savedFilePath);
+          try {
+            const uploadRes = await common_vendor.index.uploadFile({
+              url: `${this.apiBaseUrl}/users/1/avatar`,
+              filePath: savedFilePath,
+              name: "file",
+              success: (uploadRes2) => {
+                const data = JSON.parse(uploadRes2.data);
+                this.tempUserInfo.avatarUrl = data.avatar_url;
+              },
+              fail: (err) => {
+                console.error("上传头像失败:", err);
+                common_vendor.index.showToast({
+                  title: "上传头像失败",
+                  icon: "none"
+                });
+              }
+            });
+          } catch (err) {
+            console.error("上传头像失败:", err);
+            common_vendor.index.showToast({
+              title: "上传头像失败",
+              icon: "none"
+            });
+          }
         },
         fail: (err) => {
-          console.error("获取用户信息失败：", err);
+          console.error("保存头像失败:", err);
           common_vendor.index.showToast({
-            title: "获取用户信息失败",
+            title: "保存头像失败",
             icon: "none"
           });
         }
       });
+    },
+    // 确认用户信息
+    confirmUserInfo() {
+      if (!this.tempUserInfo.avatarUrl || !this.tempUserInfo.nickName) {
+        common_vendor.index.showToast({
+          title: "请完善头像和昵称",
+          icon: "none"
+        });
+        return;
+      }
+      common_vendor.index.setStorageSync("avatarUrl", this.tempUserInfo.avatarUrl);
+      common_vendor.index.setStorageSync("nickName", this.tempUserInfo.nickName);
+      this.showUserInfoDialog = false;
+      this.wxLogin(this.tempUserInfo);
     },
     // 微信登录
     wxLogin(userInfo) {
@@ -133,14 +178,21 @@ const _sfc_main = {
   }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
-  return {
+  return common_vendor.e({
     a: common_assets._imports_0,
     b: common_vendor.o((...args) => $options.handleWXLogin && $options.handleWXLogin(...args)),
     c: $data.isAgree,
     d: common_vendor.o((...args) => $options.goToUserAgreement && $options.goToUserAgreement(...args)),
     e: common_vendor.o((...args) => $options.goToPrivacyPolicy && $options.goToPrivacyPolicy(...args)),
-    f: common_vendor.o((...args) => $options.handleAgreeChange && $options.handleAgreeChange(...args))
-  };
+    f: common_vendor.o((...args) => $options.handleAgreeChange && $options.handleAgreeChange(...args)),
+    g: $data.showUserInfoDialog
+  }, $data.showUserInfoDialog ? {
+    h: $data.tempUserInfo.avatarUrl,
+    i: common_vendor.o((...args) => $options.onChooseAvatar && $options.onChooseAvatar(...args)),
+    j: $data.tempUserInfo.nickName,
+    k: common_vendor.o(($event) => $data.tempUserInfo.nickName = $event.detail.value),
+    l: common_vendor.o((...args) => $options.confirmUserInfo && $options.confirmUserInfo(...args))
+  } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

@@ -44,26 +44,6 @@
 								@error="handleImageError($event, index, mediaIndex)"
 							/>
 						</view>
-						
-						<!-- 视频展示区域 -->
-						<view class="video-container" v-if="item.media_list && item.media_list[0]?.type === 1">
-							<view class="video-wrapper">
-								<video 
-									:src="`https://${item.media_list[0].url}`"
-									:poster="`https://${item.media_list[0].url}?x-oss-process=video/snapshot,t_1000,f_jpg`"
-									object-fit="contain"
-									@tap="playVideo(item.media_list[0].url)"
-									:style="{
-										width: '40vw',
-										aspectRatio: `${item.media_list[0].width} / ${item.media_list[0].height}`
-									}"
-									show-play-btn="true"
-									controls="{{false}}"
-									show-center-play-btn="{{false}}"
-								></video>
-							</view>
-						</view>
-						
 						<view class="time">{{item.time}}</view>
 						<view class="status-tag" :class="{ pending: currentStatus === 0 }">
 							{{ currentStatus === 0 ? '审核中' : '' }}

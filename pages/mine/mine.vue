@@ -2,7 +2,7 @@
 	<view class="mine-container">
 		<!-- 用户信息 -->
 		<view class="user-info">
-			<image class="avatar" :src="avatarUrl || '/static/logo.png'" mode="aspectFill"></image>
+			<image class="avatar" :src="avatarUrl" mode="aspectFill"></image>
 			<view class="info">
 				<text class="nickname">{{nickName || '未登录'}}</text>
 				<text class="id" v-if="userId">ID: {{userId}}</text>
@@ -56,10 +56,10 @@ export default {
 				comments: 0    // 评论数
 			},
 			menuItems: [
-				{ name: '我的表白', icon: 'cuIcon-favor' },
-				{ name: '我的评论', icon: 'cuIcon-comment' },
-				{ name: '我的点赞', icon: 'cuIcon-appreciate' },
-				{ name: '设置', icon: 'cuIcon-settings' }
+				{ name: '我的表白', icon: 'cuIcon-favor' }
+				// { name: '我的评论', icon: 'cuIcon-comment' },
+				// { name: '我的点赞', icon: 'cuIcon-appreciate' },
+				// { name: '设置', icon: 'cuIcon-settings' }
 			]
 		}
 	},

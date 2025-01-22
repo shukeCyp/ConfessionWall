@@ -19,23 +19,6 @@
 			/>
 		</view>
 		
-		<!-- 视频预览 -->
-		<view class="video-container" v-if="postType === 'video' && mediaList[0]">
-			<view class="video-wrapper">
-				<image 
-					:src="mediaList[0].cover" 
-					mode="aspectFill"
-					@tap="previewVideo"
-					class="video-cover"
-					@load="onVideoLoad"
-				/>
-				<view class="delete-icon" @tap="deleteVideo">
-					<image src="/static/delete.png" class="delete-image" />
-				</view>
-				<text class="play-icon cuIcon-video"></text>
-			</view>
-		</view>
-		
 		<!-- 图片九宫格 -->
 		<view class="image-container" v-if="postType === 'image'">
 			<view class="image-grid">
@@ -182,49 +165,6 @@ export default {
 			this.isVideoHorizontal = width > height
 		},
 		
-		// 获取access_token
-		getAccessToken() {
-			return new Promise((resolve, reject) => {
-				uni.request({
-					url: 'https://confession.lyvideo.top/wx/token', // 您的后端接口
-					method: 'GET',
-					success: (res) => {
-						if (res.data && res.data.access_token) {
-							resolve(res.data.access_token)
-						} else {
-							reject(new Error('获取access_token失败'))
-						}
-					},
-					fail: reject
-				})
-			})
-		},
-		
-		// 内容安全检查
-		async checkContentSecurity(content) {
-			try {
-				const access_token = await this.getAccessToken()
-				const res = await uni.request({
-					url: `https://api.weixin.qq.com/wxa/msg_sec_check?access_token=${access_token}`,
-					method: 'POST',
-					data: {
-						content: content
-					}
-				})
-				
-				// 检查返回结果
-				if (res.data.errcode === 0) {
-					return true
-				} else {
-					console.error('内容安全检查失败：', res.data)
-					throw new Error(res.data.errmsg || '内容包含违规信息')
-				}
-			} catch (err) {
-				console.error('内容安全检查出错：', err)
-				throw err
-			}
-		},
-		
 		// 修改 publish 方法
 		async publish() {
 			if (!this.canPublish) return
@@ -245,11 +185,6 @@ export default {
 			})
 			
 			try {
-				// 先进行内容安全检查
-				if (this.content.trim()) {
-					await this.checkContentSecurity(this.content.trim())
-				}
-				
 				// 内容检查通过后，继续发布流程
 				uni.request({
 					url: `https://confession.lyvideo.top/posts?user_id=${userId}`,
@@ -377,7 +312,7 @@ export default {
 		// 发布完成处理
 		handleUploadComplete() {
 			uni.showToast({
-				title: '发布成功',
+				title: '等待审核',
 				icon: 'success',
 				duration: 1500
 			})

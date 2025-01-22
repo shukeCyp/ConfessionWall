@@ -8,7 +8,6 @@ if (!Math) {
   "./pages/mine/mine.js";
   "./pages/comments/comments.js";
   "./pages/post/post.js";
-  "./pages/video-player/video-player.js";
   "./pages/my-posts/my-posts.js";
 }
 const lazyCodeLoading = "requiredComponents";

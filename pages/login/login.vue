@@ -30,6 +30,20 @@
 				</label>
 			</checkbox-group>
 		</view>
+		
+		<!-- 使用Dialog替代uni-popup -->
+		<view class="dialog" v-if="showUserInfoDialog">
+			<view class="dialog-mask"></view>
+			<view class="dialog-content">
+				<view class="dialog-title">完善个人信息</view>
+				<button class="avatar-wrapper" open-type="chooseAvatar" @chooseavatar="onChooseAvatar">
+					<image class="avatar" :src="tempUserInfo.avatarUrl" mode="aspectFill"></image>
+					<view class="avatar-tip">点击选择头像</view>
+				</button>
+				<input type="nickname" class="nickname-input" placeholder="请输入昵称" v-model="tempUserInfo.nickName"/>
+				<button class="confirm-btn" @tap="confirmUserInfo">确认</button>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -38,7 +52,12 @@ export default {
 	data() {
 		return {
 			isAgree: false,
-			apiBaseUrl: 'https://confession.lyvideo.top'  // 修改为正确的域名
+			apiBaseUrl: 'https://confession.lyvideo.top',
+			showUserInfoDialog: false,
+			tempUserInfo: {
+				avatarUrl: '/static/logo.png', // 设置默认头像
+				nickName: ''
+			}
 		}
 	},
 	methods: {
@@ -51,27 +70,73 @@ export default {
 				return
 			}
 			
-			// 先获取用户信息
-			uni.getUserInfo({
-				success: (userRes) => {
-					console.log('用户信息：', userRes.userInfo)
-					// 存储用户基本信息
-					const userInfo = userRes.userInfo
-					uni.setStorageSync('avatarUrl', userInfo.avatarUrl)
-					uni.setStorageSync('gender', userInfo.gender)
-					uni.setStorageSync('nickName', userInfo.nickName)
+			// 显示Dialog
+			this.showUserInfoDialog = true
+		},
+		
+		// 选择头像回调
+		onChooseAvatar(e) {
+			console.log("选择头像回调：" + e.detail.avatarUrl)
+			wx.getFileSystemManager().saveFile({
+				tempFilePath: e.detail.avatarUrl,
+				success: async (res) => {
+					const savedFilePath = res.savedFilePath;
+					console.log("保存的头像文件路径：" + savedFilePath);
 					
-					// 然后进行登录
-					this.wxLogin(userInfo)
+					try {
+						const uploadRes = await uni.uploadFile({
+							url: `${this.apiBaseUrl}/users/1/avatar`,
+							filePath: savedFilePath,
+							name: 'file',
+							success: (uploadRes) => {
+								const data = JSON.parse(uploadRes.data);
+								this.tempUserInfo.avatarUrl = data.avatar_url;
+							},
+							fail: (err) => {
+								console.error('上传头像失败:', err);
+								uni.showToast({
+									title: '上传头像失败',
+									icon: 'none'
+								});
+							}
+						});
+					} catch (err) {
+						console.error('上传头像失败:', err);
+						uni.showToast({
+							title: '上传头像失败',
+							icon: 'none'
+						});
+					}
 				},
 				fail: (err) => {
-					console.error('获取用户信息失败：', err)
+					console.error('保存头像失败:', err);
 					uni.showToast({
-						title: '获取用户信息失败',
-						icon: 'none'
-					})
+						title: '保存头像失败',
+						icon: 'none' 
+					});
 				}
-			})
+			});
+		},
+		
+		// 确认用户信息
+		confirmUserInfo() {
+			if (!this.tempUserInfo.avatarUrl || !this.tempUserInfo.nickName) {
+				uni.showToast({
+					title: '请完善头像和昵称',
+					icon: 'none'
+				})
+				return
+			}
+			
+			// 存储用户基本信息
+			uni.setStorageSync('avatarUrl', this.tempUserInfo.avatarUrl)
+			uni.setStorageSync('nickName', this.tempUserInfo.nickName)
+			
+			// 关闭Dialog
+			this.showUserInfoDialog = false
+			
+			// 继续登录流程
+			this.wxLogin(this.tempUserInfo)
 		},
 		
 		// 微信登录
@@ -289,6 +354,93 @@ export default {
 		
 		.link {
 			color: #07c160;
+		}
+	}
+}
+
+.dialog {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 9999;
+	
+	.dialog-mask {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.6);
+	}
+	
+	.dialog-content {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: #fff;
+		border-radius: 20rpx;
+		padding: 40rpx;
+		width: 600rpx;
+		
+		.dialog-title {
+			text-align: center;
+			font-size: 32rpx;
+			margin-bottom: 40rpx;
+		}
+		
+		.avatar-wrapper {
+			width: 160rpx;
+			height: 160rpx;
+			margin: 0 auto 40rpx;
+			padding: 0;
+			border-radius: 50%;
+			overflow: hidden;
+			background: none;
+			position: relative;
+			
+			&::after {
+				border: none;
+			}
+			
+			.avatar {
+				width: 100%;
+				height: 100%;
+			}
+			
+			.avatar-tip {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				background: rgba(0,0,0,0.5);
+				color: #fff;
+				font-size: 20rpx;
+				text-align: center;
+				padding: 4rpx 0;
+			}
+		}
+		
+		.nickname-input {
+			border: 1rpx solid #eee;
+			height: 80rpx;
+			border-radius: 40rpx;
+			padding: 0 30rpx;
+			margin-bottom: 40rpx;
+		}
+		
+		.confirm-btn {
+			background: #07c160;
+			color: #fff;
+			border-radius: 40rpx;
+			height: 80rpx;
+			line-height: 80rpx;
+			
+			&::after {
+				border: none;
+			}
 		}
 	}
 }

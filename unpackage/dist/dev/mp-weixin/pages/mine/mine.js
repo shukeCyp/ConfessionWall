@@ -18,10 +18,10 @@ const _sfc_main = {
         // 评论数
       },
       menuItems: [
-        { name: "我的表白", icon: "cuIcon-favor" },
-        { name: "我的评论", icon: "cuIcon-comment" },
-        { name: "我的点赞", icon: "cuIcon-appreciate" },
-        { name: "设置", icon: "cuIcon-settings" }
+        { name: "我的表白", icon: "cuIcon-favor" }
+        // { name: '我的评论', icon: 'cuIcon-comment' },
+        // { name: '我的点赞', icon: 'cuIcon-appreciate' },
+        // { name: '设置', icon: 'cuIcon-settings' }
       ]
     };
   },
@@ -119,7 +119,7 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: $data.avatarUrl || "/static/logo.png",
+    a: $data.avatarUrl,
     b: common_vendor.t($data.nickName || "未登录"),
     c: $data.userId
   }, $data.userId ? {

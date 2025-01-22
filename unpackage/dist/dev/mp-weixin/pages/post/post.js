@@ -1,6 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const common_assets = require("../../common/assets.js");
 const _sfc_main = {
   data() {
     return {
@@ -109,46 +108,6 @@ const _sfc_main = {
       const { width, height } = e.detail;
       this.isVideoHorizontal = width > height;
     },
-    // 获取access_token
-    getAccessToken() {
-      return new Promise((resolve, reject) => {
-        common_vendor.index.request({
-          url: "https://confession.lyvideo.top/wx/token",
-          // 您的后端接口
-          method: "GET",
-          success: (res) => {
-            if (res.data && res.data.access_token) {
-              resolve(res.data.access_token);
-            } else {
-              reject(new Error("获取access_token失败"));
-            }
-          },
-          fail: reject
-        });
-      });
-    },
-    // 内容安全检查
-    async checkContentSecurity(content) {
-      try {
-        const access_token = await this.getAccessToken();
-        const res = await common_vendor.index.request({
-          url: `https://api.weixin.qq.com/wxa/msg_sec_check?access_token=${access_token}`,
-          method: "POST",
-          data: {
-            content
-          }
-        });
-        if (res.data.errcode === 0) {
-          return true;
-        } else {
-          console.error("内容安全检查失败：", res.data);
-          throw new Error(res.data.errmsg || "内容包含违规信息");
-        }
-      } catch (err) {
-        console.error("内容安全检查出错：", err);
-        throw err;
-      }
-    },
     // 修改 publish 方法
     async publish() {
       if (!this.canPublish)
@@ -166,9 +125,6 @@ const _sfc_main = {
         mask: true
       });
       try {
-        if (this.content.trim()) {
-          await this.checkContentSecurity(this.content.trim());
-        }
         common_vendor.index.request({
           url: `https://confession.lyvideo.top/posts?user_id=${userId}`,
           method: "POST",
@@ -286,7 +242,7 @@ const _sfc_main = {
     // 发布完成处理
     handleUploadComplete() {
       common_vendor.index.showToast({
-        title: "发布成功",
+        title: "等待审核",
         icon: "success",
         duration: 1500
       });
@@ -324,30 +280,22 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     d: $data.maxLength,
     e: $data.content,
     f: common_vendor.o(($event) => $data.content = $event.detail.value),
-    g: $data.postType === "video" && $data.mediaList[0]
-  }, $data.postType === "video" && $data.mediaList[0] ? {
-    h: $data.mediaList[0].cover,
-    i: common_vendor.o((...args) => $options.previewVideo && $options.previewVideo(...args)),
-    j: common_vendor.o((...args) => $options.onVideoLoad && $options.onVideoLoad(...args)),
-    k: common_assets._imports_0$1,
-    l: common_vendor.o((...args) => $options.deleteVideo && $options.deleteVideo(...args))
-  } : {}, {
-    m: $data.postType === "image"
+    g: $data.postType === "image"
   }, $data.postType === "image" ? common_vendor.e({
-    n: common_vendor.f($data.mediaList, (item, index, i0) => {
+    h: common_vendor.f($data.mediaList, (item, index, i0) => {
       return {
         a: item.path,
         b: common_vendor.o(($event) => $options.previewMedia(index), index),
         c: index
       };
     }),
-    o: $data.mediaList.length < 9
+    i: $data.mediaList.length < 9
   }, $data.mediaList.length < 9 ? {
-    p: common_vendor.o((...args) => $options.chooseImage && $options.chooseImage(...args))
+    j: common_vendor.o((...args) => $options.chooseImage && $options.chooseImage(...args))
   } : {}) : {}, {
-    q: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
-    r: $options.canPublish ? 1 : "",
-    s: common_vendor.o((...args) => $options.publish && $options.publish(...args))
+    k: common_vendor.o((...args) => $options.goBack && $options.goBack(...args)),
+    l: $options.canPublish ? 1 : "",
+    m: common_vendor.o((...args) => $options.publish && $options.publish(...args))
   });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
